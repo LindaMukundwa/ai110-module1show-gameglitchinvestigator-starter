@@ -4,16 +4,21 @@ Answer each question in 3 to 5 sentences. Be specific and honest about what actu
 
 ## 1. What was broken when you started?
 
-- What did the game look like the first time you ran it?
-- List at least two concrete bugs you noticed at the start  
-  (for example: "the secret number kept changing" or "the hints were backwards").
-
+- The hint just says to keep going lower even despite using a binary search approach and the guess is 1. Expected to get different hints but they were broken and unhelpful.
+- The easy level has less guesses than normal, the expectation should be the opposite.
+- Game seemingly crashed after 15 tries, the expectation should be that you can continue playing.
 ---
 
 ## 2. How did you use AI as a teammate?
 
 - Which AI tools did you use on this project (for example: ChatGPT, Gemini, Copilot)?
+
+Copilot was used in this project to look through the broken game logic and fix the bugs noticed in the beginning. 
+
 - Give one example of an AI suggestion that was correct (including what the AI suggested and how you verified the result).
+
+One of the first bugs was that the guessing was incorrect and would be stuck on lower. By looking through the code, there was a problem with the comparison/hint directions being inverted and a type-mixing path that was misleading for higher/lower behavior. The fix was a focused refactors to make the comparison logic deterministic and testable. Additionally, important refactoring was done so that #file:app.py imported from #file:logic_utils.py. 
+
 - Give one example of an AI suggestion that was incorrect or misleading (including what the AI suggested and how you verified the result).
 
 ---
@@ -21,10 +26,13 @@ Answer each question in 3 to 5 sentences. Be specific and honest about what actu
 ## 3. Debugging and testing your fixes
 
 - How did you decide whether a bug was really fixed?
-- Describe at least one test you ran (manual or using pytest)  
-  and what it showed you about your code.
-- Did AI help you design or understand any tests? How?
+I decided a bug was fixed by running tests manually as well as using pytest.
 
+- Describe at least one test you ran (manual or using pytest) and what it showed you about your code.
+I did a manual test to start the app, lose a round, click New Fame and then submit a guess to make sure it continued and wasn't stuck on game over. For pytest, I created a test_game_logic.py as a test file with 15 cases to cover each aspect of the fixes and adjusted not all cases passed. It showed me the errors in my code and mismatched logic with my UI and game logic files.
+
+- Did AI help you design or understand any tests? How?
+Yes, AI made more rigorous tests once I identified the errors and wanted more examples to pass and re-iterate with.
 ---
 
 ## 4. What did you learn about Streamlit and state?
