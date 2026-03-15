@@ -12,6 +12,36 @@ from logic_utils import (
 
 st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
 
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background: #020024;
+        background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
+    }
+    [data-testid="stSidebar"] {
+        background: #020024;
+        background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(9, 9, 121, 1) 35%, rgba(0, 212, 255, 1) 100%);
+    }
+    .hint-card {
+        border: 1px solid #f6b3d2;
+        border-radius: 12px;
+        padding: 0.75rem 0.9rem;
+        background: #fff9fd;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .summary-title {
+        color: #ad1457;
+        font-weight: 700;
+        margin-top: 1rem;
+        margin-bottom: 0.4rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.title("🎮 Game Glitch Investigator")
 st.caption("An AI-generated guessing game. Something is off.")
 
@@ -44,6 +74,9 @@ if "status" not in st.session_state:
 
 if "history" not in st.session_state:
     st.session_state.history = []
+
+if "feedback_history" not in st.session_state:
+    st.session_state.feedback_history = []
 
 st.subheader("Make a guess")
 
@@ -79,6 +112,7 @@ if new_game:
     st.session_state.score = 0
     st.session_state.status = "playing"
     st.session_state.history = []
+    st.session_state.feedback_history = []
     st.success("New game started.")
     st.rerun()
 
@@ -103,8 +137,38 @@ if submit:
         outcome = check_guess(guess_int, st.session_state.secret)
         message = get_hint_message(outcome)
 
+        distance = abs(st.session_state.secret - guess_int)
+        if distance == 0:
+            temp_text = "🎯 Perfect hit"
+        elif distance <= 2:
+            temp_text = "🔥 Very hot"
+        elif distance <= 5:
+            temp_text = "🌡️ Warm"
+        elif distance <= 10:
+            temp_text = "🧊 Cool"
+        else:
+            temp_text = "❄️ Cold"
+
+        st.session_state.feedback_history.append(
+            {
+                "Attempt": st.session_state.attempts,
+                "Guess": guess_int,
+                "Outcome": outcome,
+                "Heat": temp_text,
+            }
+        )
+
         if show_hint:
-            st.warning(message)
+            if outcome == "Win":
+                st.success(message)
+            elif outcome == "Too High":
+                st.error(message)
+            else:
+                st.info(message)
+            st.markdown(
+                f"<div class='hint-card'><strong>Temperature:</strong> {temp_text}</div>",
+                unsafe_allow_html=True,
+            )
 
         st.session_state.score = update_score(
             current_score=st.session_state.score,
@@ -127,6 +191,23 @@ if submit:
                     f"The secret was {st.session_state.secret}. "
                     f"Score: {st.session_state.score}"
                 )
+
+st.markdown("<div class='summary-title'>📊 Session Summary</div>", unsafe_allow_html=True)
+summary_data = [
+    {
+        "Difficulty": difficulty,
+        "Range": f"{low} - {high}",
+        "Attempts Used": st.session_state.attempts,
+        "Attempts Allowed": attempt_limit,
+        "Score": st.session_state.score,
+        "Status": st.session_state.status,
+    }
+]
+st.table(summary_data)
+
+if st.session_state.feedback_history:
+    st.caption("Recent guess feedback")
+    st.table(st.session_state.feedback_history[-5:])
 
 st.divider()
 st.caption("Built by an AI that claims this code is production-ready.")
